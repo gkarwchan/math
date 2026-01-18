@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thales's Theorem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        #instructions {
+            margin-bottom: 15px;
+            padding: 10px 20px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333;
+        }
+        #canvas {
+            border: 2px solid #333;
+            background-color: #fff;
+            cursor: crosshair;
+        }
+        #info {
+            margin-top: 15px;
+            padding: 15px 20px;
+            background-color: #d4edda;
+            border-radius: 5px;
+            font-size: 18px;
+            color: #155724;
+            display: none;
+        }
+        #resetBtn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #resetBtn:hover {
+            background-color: #0056b3;
+        }
+        #theorem {
+            margin-top: 20px;
+            max-width: 600px;
+            text-align: center;
+            color: #555;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <h1>Thales's Theorem</h1>
+    <div id="instructions">Click to place the first point (A)</div>
+    <canvas id="canvas" width="700" height="500"></canvas>
+    <div id="info"></div>
+    <button id="resetBtn">Reset</button>
+    <div id="theorem">
+        <strong>Thales's Theorem:</strong> If A, B, and C are distinct points on a circle
+        where line AB is a diameter, then angle ACB is always a right angle (90°).
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const instructions = document.getElementById('instructions');
+        const info = document.getElementById('info');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let state = 'pickA'; // pickA, pickB, pickC, dragging
+        let pointA = null;
+        let pointB = null;
+        let pointC = null;
+        let center = null;
+        let radius = null;
+        let isDragging = false;
+
+        function drawPoint(x, y, label, color = '#e74c3c') {
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = '#333';
+            ctx.fillText(label, x + 12, y - 12);
+        }
+
+        function drawSemicircle() {
+            if (!pointA || !pointB) return;
+
+            center = {
+                x: (pointA.x + pointB.x) / 2,
+                y: (pointA.y + pointB.y) / 2
+            };
+            radius = Math.sqrt(
+                Math.pow(pointB.x - pointA.x, 2) +
+                Math.pow(pointB.y - pointA.y, 2)
+            ) / 2;
+
+            // Calculate the angle of the diameter
+            const angle = Math.atan2(pointB.y - pointA.y, pointB.x - pointA.x);
+
+            // Draw semicircle (upper half relative to the diameter)
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, radius, angle + Math.PI, angle, false);
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Draw diameter line
+            ctx.beginPath();
+            ctx.moveTo(pointA.x, pointA.y);
+            ctx.lineTo(pointB.x, pointB.y);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw center point
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#333';
+            ctx.fill();
+        }
+
+        function drawTriangle() {
+            if (!pointA || !pointB || !pointC) return;
+
+            ctx.beginPath();
+            ctx.moveTo(pointA.x, pointA.y);
+            ctx.lineTo(pointC.x, pointC.y);
+            ctx.lineTo(pointB.x, pointB.y);
+            ctx.closePath();
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(46, 204, 113, 0.2)';
+            ctx.fill();
+
+            // Draw right angle indicator at C
+            drawRightAngle();
+        }
+
+        function drawRightAngle() {
+            const size = 20;
+
+            // Vector from C to A
+            const caX = pointA.x - pointC.x;
+            const caY = pointA.y - pointC.y;
+            const caLen = Math.sqrt(caX * caX + caY * caY);
+
+            // Vector from C to B
+            const cbX = pointB.x - pointC.x;
+            const cbY = pointB.y - pointC.y;
+            const cbLen = Math.sqrt(cbX * cbX + cbY * cbY);
+
+            // Normalize vectors
+            const caUnitX = caX / caLen;
+            const caUnitY = caY / caLen;
+            const cbUnitX = cbX / cbLen;
+            const cbUnitY = cbY / cbLen;
+
+            // Points for the right angle square
+            const p1 = {
+                x: pointC.x + caUnitX * size,
+                y: pointC.y + caUnitY * size
+            };
+            const p2 = {
+                x: pointC.x + (caUnitX + cbUnitX) * size,
+                y: pointC.y + (caUnitY + cbUnitY) * size
+            };
+            const p3 = {
+                x: pointC.x + cbUnitX * size,
+                y: pointC.y + cbUnitY * size
+            };
+
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.lineTo(p3.x, p3.y);
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function calculateAngle() {
+            if (!pointA || !pointB || !pointC) return null;
+
+            // Vector from C to A
+            const caX = pointA.x - pointC.x;
+            const caY = pointA.y - pointC.y;
+
+            // Vector from C to B
+            const cbX = pointB.x - pointC.x;
+            const cbY = pointB.y - pointC.y;
+
+            // Dot product
+            const dot = caX * cbX + caY * cbY;
+
+            // Magnitudes
+            const magCA = Math.sqrt(caX * caX + caY * caY);
+            const magCB = Math.sqrt(cbX * cbX + cbY * cbY);
+
+            // Angle in radians
+            const angleRad = Math.acos(dot / (magCA * magCB));
+
+            // Convert to degrees
+            return angleRad * (180 / Math.PI);
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (pointA && pointB) {
+                drawSemicircle();
+            }
+
+            if (pointA && pointB && pointC) {
+                drawTriangle();
+            }
+
+            if (pointA) {
+                drawPoint(pointA.x, pointA.y, 'A', '#e74c3c');
+            }
+            if (pointB) {
+                drawPoint(pointB.x, pointB.y, 'B', '#e74c3c');
+            }
+            if (pointC) {
+                drawPoint(pointC.x, pointC.y, 'C', '#9b59b6');
+            }
+
+            if (pointA && pointB && pointC) {
+                const angle = calculateAngle();
+                info.style.display = 'block';
+                info.innerHTML = `Angle at C: <strong>${angle.toFixed(2)}°</strong> (Always 90° by Thales's Theorem!)`;
+            }
+        }
+
+        function getPointOnSemicircle(mouseX, mouseY) {
+            if (!center || !radius) return null;
+
+            // Calculate angle from center to mouse position
+            let angle = Math.atan2(mouseY - center.y, mouseX - center.x);
+
+            // Calculate the diameter angle
+            const diameterAngle = Math.atan2(pointB.y - pointA.y, pointB.x - pointA.x);
+
+            // Normalize the angle relative to the diameter
+            let relativeAngle = angle - diameterAngle;
+
+            // Ensure the point is on the upper semicircle
+            while (relativeAngle > Math.PI) relativeAngle -= 2 * Math.PI;
+            while (relativeAngle < -Math.PI) relativeAngle += 2 * Math.PI;
+
+            // Clamp to semicircle range (between PI and 2*PI relative to diameter)
+            if (relativeAngle > 0) {
+                relativeAngle = -0.01; // Just below the diameter
+            }
+            if (relativeAngle < -Math.PI) {
+                relativeAngle = -Math.PI + 0.01;
+            }
+
+            // Clamp to avoid exact endpoints
+            if (relativeAngle > -0.1) relativeAngle = -0.1;
+            if (relativeAngle < -Math.PI + 0.1) relativeAngle = -Math.PI + 0.1;
+
+            angle = diameterAngle + relativeAngle;
+
+            return {
+                x: center.x + radius * Math.cos(angle),
+                y: center.y + radius * Math.sin(angle)
+            };
+        }
+
+        function isNearPoint(mouseX, mouseY, point, threshold = 15) {
+            if (!point) return false;
+            const dist = Math.sqrt(
+                Math.pow(mouseX - point.x, 2) +
+                Math.pow(mouseY - point.y, 2)
+            );
+            return dist <= threshold;
+        }
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (state === 'pickA') {
+                pointA = { x, y };
+                state = 'pickB';
+                instructions.textContent = 'Click to place the second point (B)';
+                render();
+            } else if (state === 'pickB') {
+                pointB = { x, y };
+                state = 'pickC';
+                instructions.textContent = 'Click on the semicircle to place point (C)';
+                render();
+            } else if (state === 'pickC') {
+                const newPoint = getPointOnSemicircle(x, y);
+                if (newPoint) {
+                    pointC = newPoint;
+                    state = 'dragging';
+                    instructions.textContent = 'Drag point C along the semicircle to see the angle stays at 90°!';
+                    render();
+                }
+            }
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (state !== 'dragging') return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (isNearPoint(x, y, pointC)) {
+                isDragging = true;
+                canvas.style.cursor = 'grabbing';
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (state === 'dragging' && !isDragging) {
+                if (isNearPoint(x, y, pointC)) {
+                    canvas.style.cursor = 'grab';
+                } else {
+                    canvas.style.cursor = 'crosshair';
+                }
+            }
+
+            if (isDragging) {
+                const newPoint = getPointOnSemicircle(x, y);
+                if (newPoint) {
+                    pointC = newPoint;
+                    render();
+                }
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            canvas.style.cursor = 'crosshair';
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
+
+        resetBtn.addEventListener('click', () => {
+            state = 'pickA';
+            pointA = null;
+            pointB = null;
+            pointC = null;
+            center = null;
+            radius = null;
+            isDragging = false;
+            instructions.textContent = 'Click to place the first point (A)';
+            info.style.display = 'none';
+            canvas.style.cursor = 'crosshair';
+            render();
+        });
+
+        render();
+    </script>
+</body>
+</html>
