@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thales's Theorem & Intercept Theorem in Bridge Stability</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #8892b0;
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            color: #1a1a2e;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .canvas-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 10px;
+            background: #0a0a1a;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d9ff, #0099ff);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: #fff;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #1a1a2e;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 217, 255, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .explanation {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 4px solid #00d9ff;
+        }
+
+        .explanation h3 {
+            color: #00d9ff;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .explanation p {
+            line-height: 1.8;
+            color: #ccd6f6;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: #00d9ff;
+            box-shadow: 0 0 10px #00d9ff;
+        }
+
+        .step-dot.completed {
+            background: #00ff88;
+        }
+
+        .formula-box {
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 1.2rem;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+        }
+
+        .highlight {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .slider-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 10px;
+            color: #8892b0;
+        }
+
+        input[type="range"] {
+            width: 300px;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #00d9ff;
+            cursor: pointer;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-card h4 {
+            color: #00ff88;
+            margin-bottom: 10px;
+        }
+
+        .info-card p {
+            color: #8892b0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌉 Geometry in Bridge Engineering</h1>
+        <p class="subtitle">Interactive exploration of Thales's Theorem & Intercept Theorem</p>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('thales')">Thales's Theorem</button>
+            <button class="tab-btn" onclick="switchTab('intercept')">Intercept Theorem</button>
+            <button class="tab-btn" onclick="switchTab('bridge')">Bridge Application</button>
+        </div>
+
+        <!-- Thales's Theorem Section -->
+        <div id="thales" class="content-section active">
+            <div class="canvas-container">
+                <canvas id="thalesCanvas" width="800" height="500"></canvas>
+            </div>
+            
+            <div class="step-indicator" id="thalesSteps">
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-secondary" onclick="prevStepThales()" id="thalesPrev">← Previous</button>
+                <button class="btn btn-primary" onclick="nextStepThales()" id="thalesNext">Next Step →</button>
+                <button class="btn btn-success" onclick="resetThales()">🔄 Reset</button>
+            </div>
+
+            <div class="slider-container">
+                <label>Move point B around the circle:</label>
+                <input type="range" id="thalesSlider" min="10" max="170" value="60" oninput="updateThalesPoint()">
+            </div>
+
+            <div class="explanation" id="thalesExplanation">
+                <h3>Step 1: The Circle and Diameter</h3>
+                <p>We start with a circle and its diameter AC. The diameter passes through the center O and connects two points on the circle.</p>
+                <div class="formula-box">
+                    Diameter AC passes through center O
+                </div>
+            </div>
+        </div>
+
+        <!-- Intercept Theorem Section -->
+        <div id="intercept" class="content-section">
+            <div class="canvas-container">
+                <canvas id="interceptCanvas" width="800" height="500"></canvas>
+            </div>
+            
+            <div class="step-indicator" id="interceptSteps">
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-secondary" onclick="prevStepIntercept()" id="interceptPrev">← Previous</button>
+                <button class="btn btn-primary" onclick="nextStepIntercept()" id="interceptNext">Next Step →</button>
+                <button class="btn btn-success" onclick="resetIntercept()">🔄 Reset</button>
+            </div>
+
+            <div class="slider-container">
+                <label>Adjust the parallel line position:</label>
+                <input type="range" id="interceptSlider" min="20" max="80" value="50" oninput="updateInterceptLine()">
+            </div>
+
+            <div class="explanation" id="interceptExplanation">
+                <h3>Step 1: The Triangle</h3>
+                <p>We begin with triangle ABC. This will be the basis for understanding the Intercept Theorem.</p>
+            </div>
+        </div>
+
+        <!-- Bridge Application Section -->
+        <div id="bridge" class="content-section">
+            <div class="canvas-container">
+                <canvas id="bridgeCanvas" width="800" height="500"></canvas>
+            </div>
+            
+            <div class="step-indicator" id="bridgeSteps">
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-secondary" onclick="prevStepBridge()" id="bridgePrev">← Previous</button>
+                <button class="btn btn-primary" onclick="nextStepBridge()" id="bridgeNext">Next Step →</button>
+                <button class="btn btn-success" onclick="resetBridge()">🔄 Reset</button>
+            </div>
+
+            <div class="explanation" id="bridgeExplanation">
+                <h3>Step 1: Bridge Foundation</h3>
+                <p>Let's see how Thales's and Intercept theorems are applied in real bridge engineering for stability.</p>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <h4>🔺 Thales in Bridges</h4>
+                    <p>Arch bridges use the semicircle property - any point on the arch creates a 90° angle with the endpoints, ensuring optimal load distribution.</p>
+                </div>
+                <div class="info-card">
+                    <h4>📐 Intercept in Trusses</h4>
+                    <p>Parallel cross-members in truss bridges divide the main supports proportionally, distributing weight evenly across the structure.</p>
+                </div>
+                <div class="info-card">
+                    <h4>⚖️ Load Distribution</h4>
+                    <p>Both theorems ensure that forces are distributed proportionally, preventing stress concentration at any single point.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let thalesStep = 0;
+        let interceptStep = 0;
+        let bridgeStep = 0;
+        let animationId;
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabName === 'thales') drawThales();
+            if (tabName === 'intercept') drawIntercept();
+            if (tabName === 'bridge') drawBridge();
+        }
+
+        // ==================== THALES'S THEOREM ====================
+        const thalesCanvas = document.getElementById('thalesCanvas');
+        const thalesCtx = thalesCanvas.getContext('2d');
+        let thalesBAngle = 60;
+
+        function drawThales() {
+            const ctx = thalesCtx;
+            const w = thalesCanvas.width;
+            const h = thalesCanvas.height;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const radius = 180;
+            
+            // Points
+            const A = { x: centerX - radius, y: centerY };
+            const C = { x: centerX + radius, y: centerY };
+            const angleRad = thalesBAngle * Math.PI / 180;
+            const B = { 
+                x: centerX + radius * Math.cos(angleRad), 
+                y: centerY - radius * Math.sin(angleRad) 
+            };
+
+            // Step-based drawing
+            if (thalesStep >= 0) {
+                // Draw circle
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.strokeStyle = '#00d9ff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Center point
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff6b6b';
+                ctx.fill();
+                drawLabel(ctx, 'O', centerX + 10, centerY + 20, '#ff6b6b');
+            }
+
+            if (thalesStep >= 1) {
+                // Draw diameter
+                animateLine(ctx, A, C, '#00ff88', 4);
+                
+                // Points A and C
+                ctx.beginPath();
+                ctx.arc(A.x, A.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#00ff88';
+                ctx.fill();
+                drawLabel(ctx, 'A', A.x - 25, A.y + 5, '#00ff88');
+                
+                ctx.beginPath();
+                ctx.arc(C.x, C.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#00ff88';
+                ctx.fill();
+                drawLabel(ctx, 'C', C.x + 15, C.y + 5, '#00ff88');
+            }
+
+            if (thalesStep >= 2) {
+                // Point B on circle
+                ctx.beginPath();
+                ctx.arc(B.x, B.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff8e53';
+                ctx.fill();
+                drawLabel(ctx, 'B', B.x + 10, B.y - 10, '#ff8e53');
+            }
+
+            if (thalesStep >= 3) {
+                // Lines AB and BC
+                drawLine(ctx, A, B, '#ff8e53', 3);
+                drawLine(ctx, B, C, '#ff8e53', 3);
+            }
+
+            if (thalesStep >= 4) {
+                // Show the right angle
+                drawRightAngle(ctx, B, A, C, 25, '#ffff00');
+                
+                // Angle measurement
+                ctx.font = 'bold 24px Arial';
+                ctx.fillStyle = '#ffff00';
+                ctx.fillText('90°', B.x - 40, B.y - 30);
+                
+                // Highlight theorem
+                ctx.font = '18px Arial';
+                ctx.fillStyle = '#00ff88';
+                ctx.fillText("Thales's Theorem: Angle ABC = 90°", w/2 - 150, 50);
+            }
+
+            updateThalesExplanation();
+        }
+
+        function drawRightAngle(ctx, vertex, p1, p2, size, color) {
+            const v1 = normalize({ x: p1.x - vertex.x, y: p1.y - vertex.y });
+            const v2 = normalize({ x: p2.x - vertex.x, y: p2.y - vertex.y });
+            
+            const corner1 = { x: vertex.x + v1.x * size, y: vertex.y + v1.y * size };
+            const corner2 = { x: vertex.x + v2.x * size, y: vertex.y + v2.y * size };
+            const corner3 = { x: corner1.x + v2.x * size, y: corner1.y + v2.y * size };
+            
+            ctx.beginPath();
+            ctx.moveTo(corner1.x, corner1.y);
+            ctx.lineTo(corner3.x, corner3.y);
+            ctx.lineTo(corner2.x, corner2.y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        function normalize(v) {
+            const len = Math.sqrt(v.x * v.x + v.y * v.y);
+            return { x: v.x / len, y: v.y / len };
+        }
+
+        function updateThalesExplanation() {
+            const explanations = [
+                {
+                    title: "Step 1: The Circle",
+                    text: "We start with a circle with center O. This circle will be the foundation for Thales's theorem.",
+                    formula: "Circle with center O and radius r"
+                },
+                {
+                    title: "Step 2: The Diameter",
+                    text: "Draw a diameter AC passing through the center O. The diameter is the longest chord of the circle, and it divides the circle into two equal semicircles.",
+                    formula: "Diameter AC = 2r (passes through center O)"
+                },
+                {
+                    title: "Step 3: Point B on the Circle",
+                    text: "Place any point B on the circle (but not at A or C). This point can be anywhere on the circumference - try moving the slider!",
+                    formula: "B is any point on the circumference where B ≠ A and B ≠ C"
+                },
+                {
+                    title: "Step 4: Connect the Triangle",
+                    text: "Draw lines from A to B and from B to C. This creates triangle ABC inscribed in the semicircle.",
+                    formula: "Triangle ABC is inscribed in the semicircle"
+                },
+                {
+                    title: "Step 5: Thales's Theorem! 🎉",
+                    text: "<span class='highlight'>The angle ABC is ALWAYS 90 degrees!</span> No matter where you place point B on the semicircle, the angle at B will always be a right angle. This is Thales's theorem - crucial for bridge arch design!",
+                    formula: "∠ABC = 90° (always!)"
+                }
+            ];
+
+            const exp = explanations[thalesStep];
+            document.getElementById('thalesExplanation').innerHTML = `
+                <h3>${exp.title}</h3>
+                <p>${exp.text}</p>
+                <div class="formula-box">${exp.formula}</div>
+            `;
+
+            updateStepIndicator('thalesSteps', thalesStep, 5);
+        }
+
+        function nextStepThales() {
+            if (thalesStep < 4) {
+                thalesStep++;
+                drawThales();
+            }
+        }
+
+        function prevStepThales() {
+            if (thalesStep > 0) {
+                thalesStep--;
+                drawThales();
+            }
+        }
+
+        function resetThales() {
+            thalesStep = 0;
+            thalesBAngle = 60;
+            document.getElementById('thalesSlider').value = 60;
+            drawThales();
+        }
+
+        function updateThalesPoint() {
+            thalesBAngle = parseInt(document.getElementById('thalesSlider').value);
+            drawThales();
+        }
+
+        // ==================== INTERCEPT THEOREM ====================
+        const interceptCanvas = document.getElementById('interceptCanvas');
+        const interceptCtx = interceptCanvas.getContext('2d');
+        let interceptRatio = 0.5;
+
+        function drawIntercept() {
+            const ctx = interceptCtx;
+            const w = interceptCanvas.width;
+            const h = interceptCanvas.height;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            // Triangle vertices
+            const A = { x: 400, y: 80 };
+            const B = { x: 150, y: 400 };
+            const C = { x: 650, y: 400 };
+            
+            // Points on sides (parallel line intersection)
+            const t = interceptRatio;
+            const D = { x: A.x + t * (B.x - A.x), y: A.y + t * (B.y - A.y) };
+            const E = { x: A.x + t * (C.x - A.x), y: A.y + t * (C.y - A.y) };
+
+            if (interceptStep >= 0) {
+                // Draw main triangle
+                drawLine(ctx, A, B, '#00d9ff', 3);
+                drawLine(ctx, B, C, '#00d9ff', 3);
+                drawLine(ctx, C, A, '#00d9ff', 3);
+                
+                // Label vertices
+                drawPoint(ctx, A, 8, '#00ff88');
+                drawPoint(ctx, B, 8, '#00ff88');
+                drawPoint(ctx, C, 8, '#00ff88');
+                drawLabel(ctx, 'A', A.x - 5, A.y - 15, '#00ff88');
+                drawLabel(ctx, 'B', B.x - 25, B.y + 10, '#00ff88');
+                drawLabel(ctx, 'C', C.x + 15, C.y + 10, '#00ff88');
+            }
+
+            if (interceptStep >= 1) {
+                // Draw parallel line DE
+                drawLine(ctx, D, E, '#ff8e53', 4);
+                drawPoint(ctx, D, 8, '#ff8e53');
+                drawPoint(ctx, E, 8, '#ff8e53');
+                drawLabel(ctx, 'D', D.x - 25, D.y, '#ff8e53');
+                drawLabel(ctx, 'E', E.x + 15, E.y, '#ff8e53');
+                
+                // Show parallel symbol
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#ff8e53';
+                ctx.fillText('DE ∥ BC', (D.x + E.x) / 2 - 30, (D.y + E.y) / 2 - 15);
+            }
+
+            if (interceptStep >= 2) {
+                // Highlight AD and AB
+                drawLine(ctx, A, D, '#ffff00', 5);
+                drawLabel(ctx, 'AD', (A.x + D.x) / 2 - 30, (A.y + D.y) / 2, '#ffff00');
+                
+                // Show AD length
+                const adLen = Math.round(t * 100);
+                ctx.font = 'bold 18px Arial';
+                ctx.fillStyle = '#ffff00';
+                ctx.fillText(`AD = ${adLen}%`, 80, 200);
+            }
+
+            if (interceptStep >= 3) {
+                // Highlight AE and AC
+                drawLine(ctx, A, E, '#00ffff', 5);
+                drawLabel(ctx, 'AE', (A.x + E.x) / 2 + 15, (A.y + E.y) / 2, '#00ffff');
+                
+                // Show AE length
+                const aeLen = Math.round(t * 100);
+                ctx.font = 'bold 18px Arial';
+                ctx.fillStyle = '#00ffff';
+                ctx.fillText(`AE = ${aeLen}%`, 600, 200);
+            }
+
+            if (interceptStep >= 4) {
+                // Show the proportion
+                ctx.font = 'bold 22px Arial';
+                ctx.fillStyle = '#00ff88';
+                ctx.fillText('AD/AB = AE/AC = DE/BC', w/2 - 130, 50);
+                
+                const ratio = Math.round(t * 100);
+                ctx.font = '20px Arial';
+                ctx.fillStyle = '#ffff00';
+                ctx.fillText(`Ratio: ${ratio}%`, w/2 - 40, 450);
+                
+                // Draw ratio visualization
+                drawRatioBar(ctx, 300, 460, 200, 20, t);
+            }
+
+            updateInterceptExplanation();
+        }
+
+        function drawRatioBar(ctx, x, y, width, height, ratio) {
+            // Background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(x, y, width, height);
+            
+            // Filled portion
+            ctx.fillStyle = '#00ff88';
+            ctx.fillRect(x, y, width * ratio, height);
+            
+            // Border
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, width, height);
+        }
+
+        function updateInterceptExplanation() {
+            const explanations = [
+                {
+                    title: "Step 1: The Triangle",
+                    text: "Start with triangle ABC. This forms the basic structure - similar to how a bridge truss is built with triangular supports.",
+                    formula: "Triangle ABC with vertices A (apex), B and C (base)"
+                },
+                {
+                    title: "Step 2: The Parallel Line",
+                    text: "Draw a line DE parallel to the base BC. This line intersects the two sides AB and AC. In bridges, parallel cross-members provide structural support.",
+                    formula: "Line DE ∥ BC (DE is parallel to BC)"
+                },
+                {
+                    title: "Step 3: First Proportion",
+                    text: "The segment AD is cut from AB. Notice how AD relates to the full length AB - this proportion is key to the theorem.",
+                    formula: "AD is a segment of AB"
+                },
+                {
+                    title: "Step 4: Second Proportion",
+                    text: "Similarly, AE is cut from AC. The magic of the Intercept Theorem is that these proportions are equal!",
+                    formula: "AE is a segment of AC"
+                },
+                {
+                    title: "Step 5: The Intercept Theorem! 🎉",
+                    text: "<span class='highlight'>AD/AB = AE/AC = DE/BC</span><br><br>When a line is parallel to one side of a triangle, it divides the other two sides proportionally. Move the slider to see how the ratio stays consistent!",
+                    formula: "AD/AB = AE/AC = DE/BC (The Intercept Theorem)"
+                }
+            ];
+
+            const exp = explanations[interceptStep];
+            document.getElementById('interceptExplanation').innerHTML = `
+                <h3>${exp.title}</h3>
+                <p>${exp.text}</p>
+                <div class="formula-box">${exp.formula}</div>
+            `;
+
+            updateStepIndicator('interceptSteps', interceptStep, 5);
+        }
+
+        function nextStepIntercept() {
+            if (interceptStep < 4) {
+                interceptStep++;
+                drawIntercept();
+            }
+        }
+
+        function prevStepIntercept() {
+            if (interceptStep > 0) {
+                interceptStep--;
+                drawIntercept();
+            }
+        }
+
+        function resetIntercept() {
+            interceptStep = 0;
+            interceptRatio = 0.5;
+            document.getElementById('interceptSlider').value = 50;
+            drawIntercept();
+        }
+
+        function updateInterceptLine() {
+            interceptRatio = parseInt(document.getElementById('interceptSlider').value) / 100;
+            drawIntercept();
+        }
+
+        // ==================== BRIDGE APPLICATION ====================
+        const bridgeCanvas = document.getElementById('bridgeCanvas');
+        const bridgeCtx = bridgeCanvas.getContext('2d');
+        let bridgeAnimProgress = 0;
+
+        function drawBridge() {
+            const ctx = bridgeCtx;
+            const w = bridgeCanvas.width;
+            const h = bridgeCanvas.height;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            // Draw ground
+            ctx.fillStyle = '#2d4a3e';
+            ctx.fillRect(0, h - 50, w, 50);
+            
+            // Bridge deck level
+            const deckY = h - 150;
+            const leftPier = 100;
+            const rightPier = 700;
+
+            if (bridgeStep >= 0) {
+                // Draw piers
+                ctx.fillStyle = '#5a5a5a';
+                ctx.fillRect(leftPier - 20, deckY, 40, 100);
+                ctx.fillRect(rightPier - 20, deckY, 40, 100);
+                
+                // Draw deck
+                ctx.fillStyle = '#404040';
+                ctx.fillRect(leftPier - 30, deckY - 15, rightPier - leftPier + 60, 15);
+                
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#fff';
+                ctx.fillText('Bridge Foundation & Deck', w/2 - 80, h - 20);
+            }
+
+            if (bridgeStep >= 1) {
+                // Draw arch using Thales's theorem concept
+                const archCenterX = (leftPier + rightPier) / 2;
+                const archRadius = (rightPier - leftPier) / 2;
+                
+                ctx.beginPath();
+                ctx.arc(archCenterX, deckY, archRadius, Math.PI, 0);
+                ctx.strokeStyle = '#00d9ff';
+                ctx.lineWidth = 8;
+                ctx.stroke();
+                
+                // Mark the semicircle points
+                drawPoint(ctx, {x: leftPier, y: deckY}, 10, '#00ff88');
+                drawPoint(ctx, {x: rightPier, y: deckY}, 10, '#00ff88');
+                drawLabel(ctx, 'A', leftPier - 5, deckY + 25, '#00ff88');
+                drawLabel(ctx, 'C', rightPier - 5, deckY + 25, '#00ff88');
+                
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#00d9ff';
+                ctx.fillText("Arch follows Thales's semicircle", archCenterX - 90, deckY - archRadius - 10);
+            }
+
+            if (bridgeStep >= 2) {
+                // Show multiple points on arch with 90° angles (Thales's theorem)
+                const archCenterX = (leftPier + rightPier) / 2;
+                const archRadius = (rightPier - leftPier) / 2;
+                
+                const angles = [30, 60, 90, 120, 150];
+                angles.forEach(angle => {
+                    const rad = angle * Math.PI / 180;
+                    const B = {
+                        x: archCenterX + archRadius * Math.cos(rad),
+                        y: deckY - archRadius * Math.sin(rad)
+                    };
+                    
+                    // Draw lines from A and C to B
+                    ctx.beginPath();
+                    ctx.moveTo(leftPier, deckY);
+                    ctx.lineTo(B.x, B.y);
+                    ctx.lineTo(rightPier, deckY);
+                    ctx.strokeStyle = 'rgba(255, 142, 83, 0.5)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    drawPoint(ctx, B, 6, '#ff8e53');
+                    
+                    // Draw 90° marker
+                    if (angle === 90) {
+                        drawLabel(ctx, 'B (90°)', B.x + 10, B.y - 10, '#ffff00');
+                    }
+                });
+                
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#ffff00';
+                ctx.fillText('Every point B on arch: ∠ABC = 90°', 280, 80);
+                ctx.fillText('This ensures optimal load distribution!', 270, 100);
+            }
+
+            if (bridgeStep >= 3) {
+                // Draw truss structure using Intercept theorem
+                const trussTop = deckY - 80;
+                const numSegments = 6;
+                const segmentWidth = (rightPier - leftPier) / numSegments;
+                
+                // Top chord
+                ctx.beginPath();
+                ctx.moveTo(leftPier, trussTop);
+                ctx.lineTo(rightPier, trussTop);
+                ctx.strokeStyle = '#00ff88';
+                ctx.lineWidth = 5;
+                ctx.stroke();
+                
+                // Vertical members and diagonals
+                for (let i = 0; i <= numSegments; i++) {
+                    const x = leftPier + i * segmentWidth;
+                    
+                    // Vertical
+                    drawLine(ctx, {x: x, y: trussTop}, {x: x, y: deckY - 15}, '#00ff88', 3);
+                    
+                    // Diagonal
+                    if (i < numSegments) {
+                        drawLine(ctx, {x: x, y: trussTop}, {x: x + segmentWidth, y: deckY - 15}, '#00d9ff', 2);
+                    }
+                }
+                
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#00ff88';
+                ctx.fillText('Truss with equal segments (Intercept Theorem)', 270, trussTop - 15);
+            }
+
+            if (bridgeStep >= 4) {
+                // Show proportional divisions
+                const trussTop = deckY - 80;
+                const numSegments = 6;
+                const segmentWidth = (rightPier - leftPier) / numSegments;
+                
+                // Highlight parallel lines
+                ctx.setLineDash([5, 5]);
+                for (let i = 1; i < numSegments; i++) {
+                    const x = leftPier + i * segmentWidth;
+                    ctx.beginPath();
+                    ctx.moveTo(x, trussTop - 20);
+                    ctx.lineTo(x, deckY + 20);
+                    ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                ctx.setLineDash([]);
+                
+                // Show measurements
+                ctx.font = 'bold 12px Arial';
+                ctx.fillStyle = '#ffff00';
+                for (let i = 0; i < numSegments; i++) {
+                    const x = leftPier + i * segmentWidth + segmentWidth/2;
+                    ctx.fillText('1/6', x - 10, deckY + 35);
+                }
+                
+                ctx.font = '14px Arial';
+                ctx.fillText('Equal divisions ensure uniform load distribution', 250, 50);
+            }
+
+            if (bridgeStep >= 5) {
+                // Show forces and stability
+                const archCenterX = (leftPier + rightPier) / 2;
+                const archRadius = (rightPier - leftPier) / 2;
+                
+                // Draw force arrows
+                const forcePoints = [
+                    {x: 200, y: deckY - 100},
+                    {x: 350, y: deckY - 100},
+                    {x: 500, y: deckY - 100},
+                    {x: 650, y: deckY - 100}
+                ];
+                
+                forcePoints.forEach(p => {
+                    drawArrow(ctx, p.x, p.y - 60, p.x, p.y, '#ff6b6b');
+                    ctx.font = '12px Arial';
+                    ctx.fillStyle = '#ff6b6b';
+                    ctx.fillText('Load', p.x - 15, p.y - 70);
+                });
+                
+                // Show distributed forces along arch
+                ctx.font = 'bold 16px Arial';
+                ctx.fillStyle = '#00ff88';
+                ctx.fillText('✓ Thales: Optimal angles transfer loads to supports', 220, 130);
+                ctx.fillText('✓ Intercept: Equal divisions prevent stress concentration', 200, 155);
+                
+                // Stability indicator
+                ctx.fillStyle = '#00ff88';
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText('🏗️ STABLE STRUCTURE', w/2 - 100, h - 70);
+            }
+
+            updateBridgeExplanation();
+        }
+
+        function drawArrow(ctx, fromX, fromY, toX, toY, color) {
+            const headLen = 15;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headLen * Math.cos(angle - Math.PI/6), toY - headLen * Math.sin(angle - Math.PI/6));
+            ctx.lineTo(toX - headLen * Math.cos(angle + Math.PI/6), toY - headLen * Math.sin(angle + Math.PI/6));
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        function updateBridgeExplanation() {
+            const explanations = [
+                {
+                    title: "Step 1: Bridge Foundation",
+                    text: "Every bridge starts with a solid foundation. The piers support the deck and transfer loads to the ground.",
+                    formula: "Foundation = Stability Base"
+                },
+                {
+                    title: "Step 2: The Arch (Thales's Theorem)",
+                    text: "The arch follows a semicircle where AC is the diameter. According to Thales's theorem, any point on this arch creates a 90° angle with the supports - this is key for structural integrity!",
+                    formula: "Arch points A and C form diameter → ∠ABC = 90° for any point B"
+                },
+                {
+                    title: "Step 3: Why 90° Angles Matter",
+                    text: "Every point on the arch creates a right angle with the endpoints. This geometric property ensures that forces are transferred efficiently along the arch to the supports, rather than creating stress points.",
+                    formula: "Right angles = Optimal force transfer"
+                },
+                {
+                    title: "Step 4: Truss Structure (Intercept Theorem)",
+                    text: "The truss above uses parallel vertical members. By the Intercept Theorem, these parallel lines divide the bridge into equal segments, distributing weight proportionally.",
+                    formula: "Parallel members → Proportional divisions"
+                },
+                {
+                    title: "Step 5: Equal Load Distribution",
+                    text: "The Intercept Theorem ensures each section carries an equal proportion of the load. If one section had to carry more, it would be a weak point. Equal divisions = uniform stress.",
+                    formula: "Each segment = 1/n of total span (equal load sharing)"
+                },
+                {
+                    title: "Step 6: Combined Stability 🎉",
+                    text: "<span class='highlight'>Together, these theorems create a stable bridge!</span><br><br>• Thales ensures optimal angles for load transfer through the arch<br>• Intercept ensures proportional load distribution through the truss<br><br>This is why understanding geometry is crucial for engineering!",
+                    formula: "Thales + Intercept = Structural Stability"
+                }
+            ];
+
+            const exp = explanations[bridgeStep];
+            document.getElementById('bridgeExplanation').innerHTML = `
+                <h3>${exp.title}</h3>
+                <p>${exp.text}</p>
+                <div class="formula-box">${exp.formula}</div>
+            `;
+
+            updateStepIndicator('bridgeSteps', bridgeStep, 6);
+        }
+
+        function nextStepBridge() {
+            if (bridgeStep < 5) {
+                bridgeStep++;
+                drawBridge();
+            }
+        }
+
+        function prevStepBridge() {
+            if (bridgeStep > 0) {
+                bridgeStep--;
+                drawBridge();
+            }
+        }
+
+        function resetBridge() {
+            bridgeStep = 0;
+            drawBridge();
+        }
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function drawLine(ctx, p1, p2, color, width) {
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.stroke();
+        }
+
+        function animateLine(ctx, p1, p2, color, width) {
+            drawLine(ctx, p1, p2, color, width);
+        }
+
+        function drawPoint(ctx, p, radius, color) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        function drawLabel(ctx, text, x, y, color) {
+            ctx.font = 'bold 18px Arial';
+            ctx.fillStyle = color;
+            ctx.fillText(text, x, y);
+        }
+
+        function updateStepIndicator(containerId, currentStep, totalSteps) {
+            const container = document.getElementById(containerId);
+            const dots = container.querySelectorAll('.step-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.remove('active', 'completed');
+                if (index < currentStep) dot.classList.add('completed');
+                if (index === currentStep) dot.classList.add('active');
+            });
+        }
+
+        // Initialize
+        window.onload = function() {
+            drawThales();
+        };
+    </script>
+</body>
+</html>

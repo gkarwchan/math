@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realistic Bridge Geometry - Thales & Intercept Theorems</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 30%, #90EE90 70%, #228B22 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #34495e;
+            margin-bottom: 20px;
+        }
+
+        .canvas-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-blue {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+            color: white;
+        }
+
+        .btn-orange {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .explanation-box {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 5px solid #3498db;
+        }
+
+        .explanation-box h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .explanation-box p {
+            color: #555;
+            line-height: 1.7;
+        }
+
+        .highlight-blue {
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .highlight-red {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .highlight-green {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #3498db;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌉 Realistic Bridge Structures</h1>
+    <p class="subtitle">See how Thales's Theorem and Intercept Theorem create stable bridges</p>
+
+    <!-- Arch Bridge Section -->
+    <div class="canvas-section">
+        <h2 class="section-title">🏛️ Arch Bridge - Thales's Theorem</h2>
+        <canvas id="archCanvas" width="1000" height="550"></canvas>
+        
+        <div class="toggle-container">
+            <button class="toggle-btn active" onclick="toggleArchOverlay('geometry')">Show Geometry</button>
+            <button class="toggle-btn" onclick="toggleArchOverlay('forces')">Show Forces</button>
+            <button class="toggle-btn" onclick="toggleArchOverlay('angles')">Show 90° Angles</button>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #c0392b;"></div>
+                <span>Arch Structure (Semicircle)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f39c12;"></div>
+                <span>90° Angles (Thales)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #27ae60;"></div>
+                <span>Load Transfer Lines</span>
+            </div>
+        </div>
+
+        <div class="explanation-box">
+            <h3>How Thales's Theorem Creates Stable Arches</h3>
+            <p>
+                The arch follows a <span class="highlight-blue">semicircular path</span> where points A and B at the base form the diameter. 
+                According to <span class="highlight-red">Thales's Theorem</span>, any point P on this arch creates a 
+                <span class="highlight-red">perfect 90° angle</span> (∠APB = 90°) with the base points.
+                <br><br>
+                This geometric property is crucial because:
+                <br>• Right angles provide <span class="highlight-green">optimal force distribution</span>
+                <br>• Loads are efficiently transferred along the arch curve to the supports
+                <br>• No single point experiences excessive stress concentration
+            </p>
+        </div>
+    </div>
+
+    <!-- Truss Bridge Section -->
+    <div class="canvas-section">
+        <h2 class="section-title">🔺 Truss Bridge - Intercept Theorem</h2>
+        <canvas id="trussCanvas" width="1000" height="500"></canvas>
+        
+        <div class="toggle-container">
+            <button class="toggle-btn active" onclick="toggleTrussOverlay('segments')">Show Equal Segments</button>
+            <button class="toggle-btn" onclick="toggleTrussOverlay('parallel')">Show Parallel Lines</button>
+            <button class="toggle-btn" onclick="toggleTrussOverlay('proportions')">Show Proportions</button>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #2980b9;"></div>
+                <span>Main Chords</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8e44ad;"></div>
+                <span>Vertical Members (Parallel)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e74c3c;"></div>
+                <span>Diagonal Bracing</span>
+            </div>
+        </div>
+
+        <div class="explanation-box">
+            <h3>How the Intercept Theorem Creates Equal Load Distribution</h3>
+            <p>
+                The truss uses <span class="highlight-blue">parallel vertical members</span> that connect the top and bottom chords.
+                By the <span class="highlight-red">Intercept Theorem</span>, these parallel lines divide the bridge into 
+                <span class="highlight-green">perfectly equal segments</span>.
+                <br><br>
+                If the bridge span is divided into n equal parts:
+                <br>• Each segment carries exactly <span class="highlight-green">1/n of the total load</span>
+                <br>• The diagonal braces form similar triangles
+                <br>• Forces are distributed proportionally across all members
+            </p>
+        </div>
+    </div>
+
+    <!-- Combined Bridge Section -->
+    <div class="canvas-section">
+        <h2 class="section-title">🌁 Combined: Arch-Truss Bridge</h2>
+        <canvas id="combinedCanvas" width="1000" height="600"></canvas>
+        
+        <div class="controls">
+            <button class="btn btn-blue" onclick="animateCombined()">▶️ Animate Load</button>
+            <button class="btn btn-green" onclick="resetCombined()">🔄 Reset</button>
+        </div>
+
+        <div class="explanation-box">
+            <h3>The Perfect Combination</h3>
+            <p>
+                Modern bridges often combine both principles:
+                <br>• The <span class="highlight-red">arch below</span> uses Thales's theorem for primary load transfer
+                <br>• The <span class="highlight-blue">truss above</span> uses the Intercept theorem for uniform deck support
+                <br>• <span class="highlight-green">Vertical hangers</span> connect the deck to the arch at proportional intervals
+                <br><br>
+                This creates a structure where geometry itself ensures stability!
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ==================== ARCH BRIDGE ====================
+        const archCanvas = document.getElementById('archCanvas');
+        const archCtx = archCanvas.getContext('2d');
+        let archOverlay = 'geometry';
+
+        function drawArchBridge() {
+            const ctx = archCtx;
+            const w = archCanvas.width;
+            const h = archCanvas.height;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            // Sky gradient
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.6);
+            skyGrad.addColorStop(0, '#87CEEB');
+            skyGrad.addColorStop(1, '#E0F6FF');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, w, h * 0.6);
+            
+            // Water
+            const waterGrad = ctx.createLinearGradient(0, h * 0.75, 0, h);
+            waterGrad.addColorStop(0, '#4A90D9');
+            waterGrad.addColorStop(1, '#2E5A8B');
+            ctx.fillStyle = waterGrad;
+            ctx.fillRect(0, h * 0.75, w, h * 0.25);
+            
+            // Water reflections
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            for (let i = 0; i < 20; i++) {
+                ctx.fillRect(50 + i * 50, h * 0.8 + Math.random() * 30, 30 + Math.random() * 20, 3);
+            }
+            
+            // Banks
+            ctx.fillStyle = '#5D4E37';
+            ctx.fillRect(0, h * 0.65, 120, h * 0.15);
+            ctx.fillRect(w - 120, h * 0.65, 120, h * 0.15);
+            
+            // Grass on banks
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(0, h * 0.62, 130, 20);
+            ctx.fillRect(w - 130, h * 0.62, 130, 20);
+            
+            const deckY = h * 0.45;
+            const archBottom = h * 0.72;
+            const leftPier = 130;
+            const rightPier = w - 130;
+            const archCenterX = w / 2;
+            const archRadius = (rightPier - leftPier) / 2;
+            
+            // Draw stone abutments
+            drawStoneAbutment(ctx, leftPier - 60, deckY - 20, 80, archBottom - deckY + 50);
+            drawStoneAbutment(ctx, rightPier - 20, deckY - 20, 80, archBottom - deckY + 50);
+            
+            // Draw the main arch
+            ctx.beginPath();
+            ctx.arc(archCenterX, archBottom, archRadius, Math.PI, 0);
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 25;
+            ctx.stroke();
+            
+            // Arch detail (inner line)
+            ctx.beginPath();
+            ctx.arc(archCenterX, archBottom, archRadius - 15, Math.PI, 0);
+            ctx.strokeStyle = '#A0522D';
+            ctx.lineWidth = 8;
+            ctx.stroke();
+            
+            // Arch stones pattern
+            const numStones = 15;
+            for (let i = 0; i <= numStones; i++) {
+                const angle = Math.PI - (i / numStones) * Math.PI;
+                const x = archCenterX + (archRadius - 12) * Math.cos(angle);
+                const y = archBottom - (archRadius - 12) * Math.sin(angle);
+                const x2 = archCenterX + (archRadius + 12) * Math.cos(angle);
+                const y2 = archBottom - (archRadius + 12) * Math.sin(angle);
+                
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = '#654321';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            
+            // Spandrel walls (filled area above arch)
+            ctx.fillStyle = '#D2691E';
+            ctx.beginPath();
+            ctx.moveTo(leftPier, deckY);
+            ctx.lineTo(leftPier, archBottom);
+            for (let angle = Math.PI; angle >= 0; angle -= 0.05) {
+                const x = archCenterX + archRadius * Math.cos(angle);
+                const y = archBottom - archRadius * Math.sin(angle);
+                if (y < deckY) ctx.lineTo(x, y);
+            }
+            ctx.lineTo(rightPier, archBottom);
+            ctx.lineTo(rightPier, deckY);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Vertical columns from deck to arch
+            const numColumns = 9;
+            for (let i = 1; i < numColumns; i++) {
+                const x = leftPier + i * (rightPier - leftPier) / numColumns;
+                const angle = Math.acos((x - archCenterX) / archRadius);
+                const archY = archBottom - archRadius * Math.sin(angle);
+                
+                if (archY < deckY - 10) {
+                    // Column
+                    ctx.fillStyle = '#8B7355';
+                    ctx.fillRect(x - 8, archY, 16, deckY - archY);
+                    
+                    // Column cap
+                    ctx.fillStyle = '#A0522D';
+                    ctx.fillRect(x - 12, archY - 5, 24, 8);
+                }
+            }
+            
+            // Bridge deck
+            ctx.fillStyle = '#4a4a4a';
+            ctx.fillRect(leftPier - 30, deckY - 15, rightPier - leftPier + 60, 20);
+            
+            // Road surface
+            ctx.fillStyle = '#333';
+            ctx.fillRect(leftPier - 20, deckY - 12, rightPier - leftPier + 40, 14);
+            
+            // Road markings
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([30, 20]);
+            ctx.beginPath();
+            ctx.moveTo(leftPier, deckY - 5);
+            ctx.lineTo(rightPier, deckY - 5);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Railings
+            drawRailing(ctx, leftPier - 20, deckY - 35, rightPier - leftPier + 40, '#2c3e50');
+            
+            // Overlay based on selection
+            if (archOverlay === 'geometry') {
+                drawArchGeometry(ctx, archCenterX, archBottom, archRadius, leftPier, rightPier, deckY);
+            } else if (archOverlay === 'forces') {
+                drawArchForces(ctx, archCenterX, archBottom, archRadius, leftPier, rightPier, deckY);
+            } else if (archOverlay === 'angles') {
+                drawArchAngles(ctx, archCenterX, archBottom, archRadius, leftPier, rightPier);
+            }
+        }
+
+        function drawStoneAbutment(ctx, x, y, width, height) {
+            // Main structure
+            const grad = ctx.createLinearGradient(x, y, x + width, y);
+            grad.addColorStop(0, '#8B7355');
+            grad.addColorStop(0.5, '#A0522D');
+            grad.addColorStop(1, '#8B7355');
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, width, height);
+            
+            // Stone pattern
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 1;
+            const stoneH = 20;
+            const stoneW = width / 2;
+            for (let row = 0; row < height / stoneH; row++) {
+                const offset = row % 2 === 0 ? 0 : stoneW / 2;
+                for (let col = -1; col < 3; col++) {
+                    ctx.strokeRect(x + offset + col * stoneW, y + row * stoneH, stoneW, stoneH);
+                }
+            }
+        }
+
+        function drawRailing(ctx, x, y, length, color) {
+            ctx.fillStyle = color;
+            // Posts
+            const numPosts = Math.floor(length / 40);
+            for (let i = 0; i <= numPosts; i++) {
+                ctx.fillRect(x + i * 40, y, 6, 25);
+            }
+            // Top rail
+            ctx.fillRect(x, y, length, 5);
+            // Bottom rail
+            ctx.fillRect(x, y + 15, length, 4);
+        }
+
+        function drawArchGeometry(ctx, centerX, bottom, radius, leftPier, rightPier, deckY) {
+            // Highlight the semicircle
+            ctx.beginPath();
+            ctx.arc(centerX, bottom, radius + 20, Math.PI, 0);
+            ctx.strokeStyle = 'rgba(231, 76, 60, 0.8)';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Mark points A and B
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(leftPier, bottom, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(rightPier, bottom, 12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Labels
+            ctx.font = 'bold 24px Arial';
+            ctx.fillStyle = '#c0392b';
+            ctx.fillText('A', leftPier - 30, bottom + 35);
+            ctx.fillText('B', rightPier + 15, bottom + 35);
+            
+            // Diameter line
+            ctx.beginPath();
+            ctx.moveTo(leftPier, bottom);
+            ctx.lineTo(rightPier, bottom);
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Center point O
+            ctx.beginPath();
+            ctx.arc(centerX, bottom, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#f39c12';
+            ctx.fill();
+            ctx.fillText('O', centerX - 5, bottom + 30);
+            
+            // Theorem text
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillText("Thales's Theorem: Arch follows semicircle with AB as diameter", 220, 40);
+        }
+
+        function drawArchForces(ctx, centerX, bottom, radius, leftPier, rightPier, deckY) {
+            // Draw force arrows from top
+            const loadPoints = 7;
+            for (let i = 1; i < loadPoints; i++) {
+                const x = leftPier + i * (rightPier - leftPier) / loadPoints;
+                drawForceArrow(ctx, x, 60, x, deckY - 40, '#e74c3c', 'Load');
+            }
+            
+            // Show force distribution along arch
+            ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = '#27ae60';
+            
+            for (let angle = 150; angle >= 30; angle -= 30) {
+                const rad = angle * Math.PI / 180;
+                const x = centerX + radius * Math.cos(rad);
+                const y = bottom - radius * Math.sin(rad);
+                
+                // Tangent force arrow
+                const tangentX = -Math.sin(rad) * 40;
+                const tangentY = -Math.cos(rad) * 40;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + tangentX, y + tangentY);
+                ctx.strokeStyle = '#27ae60';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                
+                // Arrow head
+                drawArrowHead(ctx, x + tangentX, y + tangentY, Math.atan2(tangentY, tangentX), '#27ae60');
+            }
+            
+            // Ground reaction forces
+            drawForceArrow(ctx, leftPier, bottom + 60, leftPier, bottom + 10, '#3498db', '');
+            drawForceArrow(ctx, rightPier, bottom + 60, rightPier, bottom + 10, '#3498db', '');
+            
+            ctx.font = 'bold 18px Arial';
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillText('Forces transfer along arch curve to supports', 300, 40);
+        }
+
+        function drawArchAngles(ctx, centerX, bottom, radius, leftPier, rightPier) {
+            // Show multiple points with 90° angles
+            const angles = [30, 60, 90, 120, 150];
+            
+            angles.forEach((angle, index) => {
+                const rad = angle * Math.PI / 180;
+                const P = {
+                    x: centerX + radius * Math.cos(rad),
+                    y: bottom - radius * Math.sin(rad)
+                };
+                
+                // Lines from A and B to P
+                ctx.beginPath();
+                ctx.moveTo(leftPier, bottom);
+                ctx.lineTo(P.x, P.y);
+                ctx.lineTo(rightPier, bottom);
+                ctx.strokeStyle = `hsla(${index * 60}, 70%, 50%, 0.7)`;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Point P
+                ctx.beginPath();
+                ctx.arc(P.x, P.y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${index * 60}, 70%, 50%)`;
+                ctx.fill();
+                
+                // 90° angle marker
+                drawRightAngleMarker(ctx, P, {x: leftPier, y: bottom}, {x: rightPier, y: bottom}, 20, '#f39c12');
+                
+                // Label
+                ctx.font = 'bold 16px Arial';
+                ctx.fillStyle = '#f39c12';
+                ctx.fillText('90°', P.x + 15, P.y - 5);
+            });
+            
+            // Points A and B
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(leftPier, bottom, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(rightPier, bottom, 12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.font = 'bold 24px Arial';
+            ctx.fillStyle = '#c0392b';
+            ctx.fillText('A', leftPier - 30, bottom + 35);
+            ctx.fillText('B', rightPier + 15, bottom + 35);
+            
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillText('Every point P on arch: ∠APB = 90° (Thales)', 300, 40);
+        }
+
+        function toggleArchOverlay(type) {
+            archOverlay = type;
+            document.querySelectorAll('#archCanvas').closest('.canvas-section').querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            drawArchBridge();
+        }
+
+        // ==================== TRUSS BRIDGE ====================
+        const trussCanvas = document.getElementById('trussCanvas');
+        const trussCtx = trussCanvas.getContext('2d');
+        let trussOverlay = 'segments';
+
+        function drawTrussBridge() {
+            const ctx = trussCtx;
+            const w = trussCanvas.width;
+            const h = trussCanvas.height;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            // Sky
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+            skyGrad.addColorStop(0, '#87CEEB');
+            skyGrad.addColorStop(1, '#B0E0E6');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, w, h * 0.5);
+            
+            // Ground
+            ctx.fillStyle = '#8B7355';
+            ctx.fillRect(0, h * 0.7, w, h * 0.3);
+            
+            // Grass
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(0, h * 0.68, w, 15);
+            
+            const deckY = h * 0.55;
+            const trussHeight = 120;
+            const topY = deckY - trussHeight;
+            const leftEnd = 80;
+            const rightEnd = w - 80;
+            const numSegments = 8;
+            const segmentWidth = (rightEnd - leftEnd) / numSegments;
+            
+            // Support pillars
+            drawTrussPillar(ctx, leftEnd - 30, deckY, 60, h * 0.15);
+            drawTrussPillar(ctx, rightEnd - 30, deckY, 60, h * 0.15);
+            
+            // Main truss structure
+            // Bottom chord (main beam)
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(leftEnd - 20, deckY - 8, rightEnd - leftEnd + 40, 16);
+            
+            // Top chord
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(leftEnd, topY - 8, rightEnd - leftEnd, 16);
+            
+            // Vertical and diagonal members
+            for (let i = 0; i <= numSegments; i++) {
+                const x = leftEnd + i * segmentWidth;
+                
+                // Vertical member
+                ctx.fillStyle = '#34495e';
+                ctx.fillRect(x - 6, topY, 12, trussHeight);
+                
+                // Diagonal members (Warren truss pattern)
+                if (i < numSegments) {
+                    // Diagonal going right-down
+                    drawTrussMember(ctx, x, topY, x + segmentWidth, deckY, '#7f8c8d', 8);
+                    // Diagonal going right-up
+                    drawTrussMember(ctx, x, deckY, x + segmentWidth, topY, '#95a5a6', 8);
+                }
+            }
+            
+            // Gusset plates at joints
+            for (let i = 0; i <= numSegments; i++) {
+                const x = leftEnd + i * segmentWidth;
+                // Top joint
+                ctx.beginPath();
+                ctx.arc(x, topY, 15, 0, Math.PI * 2);
+                ctx.fillStyle = '#2c3e50';
+                ctx.fill();
+                // Bottom joint
+                ctx.beginPath();
+                ctx.arc(x, deckY, 15, 0, Math.PI * 2);
+                ctx.fillStyle = '#2c3e50';
+                ctx.fill();
+            }
+            
+            // Road deck
+            ctx.fillStyle = '#4a4a4a';
+            ctx.fillRect(leftEnd - 30, deckY + 8, rightEnd - leftEnd + 60, 15);
+            
+            // Road surface
+            ctx.fillStyle = '#333';
+            ctx.fillRect(leftEnd - 20, deckY + 10, rightEnd - leftEnd + 40, 10);
+            
+            // Road markings
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([20, 15]);
+            ctx.beginPath();
+            ctx.moveTo(leftEnd, deckY + 15);
+            ctx.lineTo(rightEnd, deckY + 15);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Overlay based on selection
+            if (trussOverlay === 'segments') {
+                drawTrussSegments(ctx, leftEnd, rightEnd, topY, deckY, numSegments, segmentWidth);
+            } else if (trussOverlay === 'parallel') {
+                drawTrussParallel(ctx, leftEnd, rightEnd, topY, deckY, numSegments, segmentWidth);
+            } else if (trussOverlay === 'proportions') {
+                drawTrussProportions(ctx, leftEnd, rightEnd, topY, deckY, numSegments, segmentWidth);
+            }
+        }
+
+        function drawTrussPillar(ctx, x, y, width, height) {
+            // Concrete pillar
+            const grad = ctx.createLinearGradient(x, y, x + width, y);
+            grad.addColorStop(0, '#7f8c8d');
+            grad.addColorStop(0.5, '#95a5a6');
+            grad.addColorStop(1, '#7f8c8d');
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, width, height);
+            
+            // Top cap
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(x - 10, y - 10, width + 20, 15);
+            
+            // Base
+            ctx.fillRect(x - 15, y + height - 10, width + 30, 20);
+        }
+
+        function drawTrussMember(ctx, x1, y1, x2, y2, color, width) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+        }
+
+        function drawTrussSegments(ctx, leftEnd, rightEnd, topY, deckY, numSegments, segmentWidth) {
+            // Highlight equal segments
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#34495e'];
+            
+            for (let i = 0; i < numSegments; i++) {
+                const x = leftEnd + i * segmentWidth;
+                
+                // Highlight segment
+                ctx.fillStyle = colors[i % colors.length] + '40';
+                ctx.fillRect(x, topY - 20, segmentWidth, deckY - topY + 50);
+                
+                // Segment label
+                ctx.font = 'bold 18px Arial';
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fillText(`1/${numSegments}`, x + segmentWidth/2 - 20, deckY + 45);
+            }
+            
+            // Dimension arrows
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(leftEnd, deckY + 70);
+            ctx.lineTo(rightEnd, deckY + 70);
+            ctx.stroke();
+            
+            // Arrow heads
+            drawArrowHead(ctx, leftEnd, deckY + 70, Math.PI, '#e74c3c');
+            drawArrowHead(ctx, rightEnd, deckY + 70, 0, '#e74c3c');
+            
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillText('Intercept Theorem: Bridge divided into 8 EQUAL segments', 250, 35);
+        }
+
+        function drawTrussParallel(ctx, leftEnd, rightEnd, topY, deckY, numSegments, segmentWidth) {
+            // Highlight parallel vertical members
+            ctx.setLineDash([10, 5]);
+            ctx.strokeStyle = '#8e44ad';
+            ctx.lineWidth = 4;
+            
+            for (let i = 0; i <= numSegments; i++) {
+                const x = leftEnd + i * segmentWidth;
+                
+                // Extended parallel lines
+                ctx.beginPath();
+                ctx.moveTo(x, topY - 40);
+                ctx.lineTo(x, deckY + 60);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+            
+            // Parallel symbol
+            ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = '#8e44ad';
+            for (let i = 1; i < numSegments; i++) {
+                const x = leftEnd + i * segmentWidth;
+                ctx.fillText('∥', x - 5, topY - 50);
+            }
+            
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillText('Parallel vertical members create proportional divisions', 270, 35);
+        }
+
+        function drawTrussProportions(ctx, leftEnd, rightEnd, topY, deckY, numSegments, segmentWidth) {
+            // Show similar triangles
+            const triangleColors = ['rgba(231, 76, 60, 0.4)', 'rgba(52, 152, 219, 0.4)'];
+            
+            for (let i = 0; i < 2; i++) {
+                const x = leftEnd + i * segmentWidth;
+                
+                // Fill triangle
+                ctx.beginPath();
+                ctx.moveTo(x, topY);
+                ctx.lineTo(x + segmentWidth, deckY);
+                ctx.lineTo(x, deckY);
+                ctx.closePath();
+                ctx.fillStyle = triangleColors[i];
+                ctx.fill();
+                ctx.strokeStyle = i === 0 ? '#e74c3c' : '#3498db';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+            
+            // Proportion formula
+            ctx.font = 'bold 22px Arial';
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillText('AD/AB = AE/AC = DE/BC', 350, 30);
+            
+            ctx.font = '18px Arial';
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillText('All triangles are SIMILAR', 380, 55);
+            ctx.fillText('(same proportions)', 400, 75);
+            
+            // Label points
+            ctx.font = 'bold 18px Arial';
+            ctx.fillStyle = '#c0392b';
+            ctx.fillText('A', leftEnd - 15, topY - 10);
+            ctx.fillText('D', leftEnd + segmentWidth - 5, topY - 10);
+            ctx.fillText('B', leftEnd - 15, deckY + 25);
+            ctx.fillText('E', leftEnd + segmentWidth - 5, deckY + 25);
+        }
+
+        function toggleTrussOverlay(type) {
+            trussOverlay = type;
+            document.querySelectorAll('#trussCanvas').closest('.canvas-section').querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            drawTrussBridge();
+        }
+
+        // ==================== COMBINED BRIDGE ====================
+        const combinedCanvas = document.getElementById('combinedCanvas');
+        const combinedCtx = combinedCanvas.getContext('2d');
+        let combinedAnimating = false;
+        let carPosition = 0;
+
+        function drawCombinedBridge() {
+            const ctx = combinedCtx;
+            const w = combinedCanvas.width;
+            const h = combinedCanvas.height;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            // Sky with clouds
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+            skyGrad.addColorStop(0, '#4A90D9');
+            skyGrad.addColorStop(1, '#87CEEB');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, w, h * 0.5);
+            
+            // Clouds
+            drawCloud(ctx, 100, 60, 60);
+            drawCloud(ctx, 300, 40, 45);
+            drawCloud(ctx, 700, 70, 55);
+            drawCloud(ctx, 900, 50, 40);
+            
+            // Water
+            const waterGrad = ctx.createLinearGradient(0, h * 0.75, 0, h);
+            waterGrad.addColorStop(0, '#4A90D9');
+            waterGrad.addColorStop(1, '#1a5276');
+            ctx.fillStyle = waterGrad;
+            ctx.fillRect(0, h * 0.7, w, h * 0.3);
+            
+            // Water waves
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 15; i++) {
+                const y = h * 0.75 + i * 15;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                for (let x = 0; x < w; x += 20) {
+                    ctx.lineTo(x + 10, y + 3 * Math.sin(x * 0.05 + Date.now() * 0.002));
+                }
+                ctx.stroke();
+            }
+            
+            // Banks with texture
+            ctx.fillStyle = '#5D4E37';
+            ctx.fillRect(0, h * 0.55, 100, h * 0.2);
+            ctx.fillRect(w - 100, h * 0.55, 100, h * 0.2);
+            
+            // Grass
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(0, h * 0.52, 110, 20);
+            ctx.fillRect(w - 110, h * 0.52, 110, 20);
+            
+            const deckY = h * 0.45;
+            const archBottom = h * 0.68;
+            const leftPier = 110;
+            const rightPier = w - 110;
+            const centerX = w / 2;
+            const archRadius = (rightPier - leftPier) / 2;
+            const numHangers = 10;
+            
+            // Draw main arch (Thales)
+            ctx.beginPath();
+            ctx.arc(centerX, archBottom, archRadius, Math.PI, 0);
+            ctx.strokeStyle = '#c0392b';
+            ctx.lineWidth = 20;
+            ctx.stroke();
+            
+            // Arch inner detail
+            ctx.beginPath();
+            ctx.arc(centerX, archBottom, archRadius - 12, Math.PI, 0);
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+            
+            // Vertical hangers (Intercept theorem - equal spacing)
+            const hangerSpacing = (rightPier - leftPier) / (numHangers + 1);
+            for (let i = 1; i <= numHangers; i++) {
+                const x = leftPier + i * hangerSpacing;
+                const angle = Math.acos((x - centerX) / archRadius);
+                const archY = archBottom - archRadius * Math.sin(angle);
+                
+                // Hanger cable
+                ctx.beginPath();
+                ctx.moveTo(x, archY);
+                ctx.lineTo(x, deckY);
+                ctx.strokeStyle = '#2c3e50';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                
+                // Connection points
+                ctx.beginPath();
+                ctx.arc(x, archY, 6, 0, Math.PI * 2);
+                ctx.fillStyle = '#f39c12';
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(x, deckY, 6, 0, Math.PI * 2);
+                ctx.fillStyle = '#f39c12';
+                ctx.fill();
+            }
+            
+            // Abutments
+            drawCombinedAbutment(ctx, leftPier - 50, deckY - 10, 70, archBottom - deckY + 40);
+            drawCombinedAbutment(ctx, rightPier - 20, deckY - 10, 70, archBottom - deckY + 40);
+            
+            // Bridge deck with detail
+            ctx.fillStyle = '#34495e';
+            ctx.fillRect(leftPier - 30, deckY - 12, rightPier - leftPier + 60, 18);
+            
+            // Road surface
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(leftPier - 20, deckY - 8, rightPier - leftPier + 40, 12);
+            
+            // Railings
+            ctx.fillStyle = '#7f8c8d';
+            for (let x = leftPier; x <= rightPier; x += 25) {
+                ctx.fillRect(x, deckY - 28, 4, 20);
+            }
+            ctx.fillRect(leftPier - 10, deckY - 30, rightPier - leftPier + 20, 4);
+            
+            // Road markings
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([15, 10]);
+            ctx.beginPath();
+            ctx.moveTo(leftPier, deckY - 2);
+            ctx.lineTo(rightPier, deckY - 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Annotations
+            // Thales annotation
+            ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = '#c0392b';
+            ctx.fillText("THALES: Arch = Semicircle", centerX - 90, archBottom - archRadius - 30);
+            ctx.fillText("∠APB = 90° for any point P", centerX - 95, archBottom - archRadius - 10);
+            
+            // Intercept annotation
+            ctx.fillStyle = '#2980b9';
+            ctx.fillText("INTERCEPT: Equal spacing", centerX - 80, deckY + 40);
+            ctx.fillText(`Each hanger at 1/${numHangers+1} intervals`, centerX - 90, deckY + 60);
+            
+            // Mark points A and B
+            ctx.fillStyle = '#f39c12';
+            ctx.beginPath();
+            ctx.arc(leftPier, archBottom, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(rightPier, archBottom, 10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#f39c12';
+            ctx.fillText('A', leftPier - 25, archBottom + 25);
+            ctx.fillText('B', rightPier + 10, archBottom + 25);
+            
+            // Draw car if animating
+            if (carPosition > 0) {
+                drawCar(ctx, leftPier + carPosition, deckY - 30);
+            }
+        }
+
+        function drawCloud(ctx, x, y, size) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.beginPath();
+            ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.4, y - size * 0.1, size * 0.4, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.8, y, size * 0.5, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.4, y + size * 0.2, size * 0.35, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawCombinedAbutment(ctx, x, y, width, height) {
+            const grad = ctx.createLinearGradient(x, y, x + width, y);
+            grad.addColorStop(0, '#5D4E37');
+            grad.addColorStop(0.5, '#8B7355');
+            grad.addColorStop(1, '#5D4E37');
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, width, height);
+            
+            // Top cap
+            ctx.fillStyle = '#4a4a4a';
+            ctx.fillRect(x - 5, y - 5, width + 10, 10);
+        }
+
+        function drawCar(ctx, x, y) {
+            // Car body
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillRect(x, y, 50, 15);
+            ctx.fillRect(x + 10, y - 12, 30, 15);
+            
+            // Windows
+            ctx.fillStyle = '#85C1E9';
+            ctx.fillRect(x + 13, y - 10, 10, 10);
+            ctx.fillRect(x + 27, y - 10, 10, 10);
+            
+            // Wheels
+            ctx.fillStyle = '#2c3e50';
+            ctx.beginPath();
+            ctx.arc(x + 12, y + 15, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 38, y + 15, 6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function animateCombined() {
+            if (combinedAnimating) return;
+            combinedAnimating = true;
+            carPosition = 0;
+            
+            const rightPier = combinedCanvas.width - 110;
+            const leftPier = 110;
+            const totalDistance = rightPier - leftPier - 60;
+            
+            function animate() {
+                carPosition += 3;
+                drawCombinedBridge();
+                
+                if (carPosition < totalDistance) {
+                    requestAnimationFrame(animate);
+                } else {
+                    combinedAnimating = false;
+                }
+            }
+            animate();
+        }
+
+        function resetCombined() {
+            combinedAnimating = false;
+            carPosition = 0;
+            drawCombinedBridge();
+        }
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function drawForceArrow(ctx, x1, y1, x2, y2, color, label) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            
+            drawArrowHead(ctx, x2, y2, Math.atan2(y2 - y1, x2 - x1), color);
+            
+            if (label) {
+                ctx.font = '12px Arial';
+                ctx.fillStyle = color;
+                ctx.fillText(label, x1 - 15, y1 - 5);
+            }
+        }
+
+        function drawArrowHead(ctx, x, y, angle, color) {
+            const headLen = 12;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - headLen * Math.cos(angle - Math.PI/6), y - headLen * Math.sin(angle - Math.PI/6));
+            ctx.lineTo(x - headLen * Math.cos(angle + Math.PI/6), y - headLen * Math.sin(angle + Math.PI/6));
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        function drawRightAngleMarker(ctx, vertex, p1, p2, size, color) {
+            const v1 = normalize({ x: p1.x - vertex.x, y: p1.y - vertex.y });
+            const v2 = normalize({ x: p2.x - vertex.x, y: p2.y - vertex.y });
+            
+            const corner1 = { x: vertex.x + v1.x * size, y: vertex.y + v1.y * size };
+            const corner2 = { x: vertex.x + v2.x * size, y: vertex.y + v2.y * size };
+            const corner3 = { x: corner1.x + v2.x * size, y: corner1.y + v2.y * size };
+            
+            ctx.beginPath();
+            ctx.moveTo(corner1.x, corner1.y);
+            ctx.lineTo(corner3.x, corner3.y);
+            ctx.lineTo(corner2.x, corner2.y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function normalize(v) {
+            const len = Math.sqrt(v.x * v.x + v.y * v.y);
+            return { x: v.x / len, y: v.y / len };
+        }
+
+        // Initialize all canvases
+        window.onload = function() {
+            drawArchBridge();
+            drawTrussBridge();
+            drawCombinedBridge();
+        };
+    </script>
+</body>
+</html>
