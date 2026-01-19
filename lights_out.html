@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lights Out - Linear Algebra Solver</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        h2 {
+            color: #4ecdc4;
+            border-bottom: 2px solid #4ecdc4;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #ff6b6b;
+        }
+        .game-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        .game-panel {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .grid {
+            display: inline-grid;
+            grid-template-columns: repeat(5, 50px);
+            gap: 5px;
+            padding: 10px;
+            background: #111;
+            border-radius: 10px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .cell.off {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+            color: #555;
+        }
+        .cell.on {
+            background: linear-gradient(145deg, #ffeb3b, #ffc107);
+            box-shadow: 0 0 15px rgba(255, 235, 59, 0.6);
+            color: #333;
+        }
+        .cell.solution-hint {
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .controls {
+            margin-top: 15px;
+        }
+        button {
+            background: linear-gradient(145deg, #4ecdc4, #44a08d);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        button.danger {
+            background: linear-gradient(145deg, #ff6b6b, #ee5a5a);
+        }
+        button.primary {
+            background: linear-gradient(145deg, #667eea, #764ba2);
+        }
+        .explanation {
+            background: rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+        .math-box {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        .matrix-display {
+            display: inline-block;
+            text-align: center;
+            margin: 10px;
+            vertical-align: middle;
+        }
+        .matrix-content {
+            display: inline-grid;
+            gap: 2px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .matrix-row {
+            display: flex;
+            gap: 4px;
+        }
+        .matrix-cell {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+        .matrix-cell.highlight {
+            background: rgba(255, 215, 0, 0.3);
+        }
+        .step-indicator {
+            background: #4ecdc4;
+            color: #1a1a2e;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .log {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+        }
+        .success {
+            color: #4ecdc4;
+        }
+        .info {
+            color: #ffd700;
+        }
+        .toggle-pattern {
+            display: inline-grid;
+            grid-template-columns: repeat(5, 20px);
+            gap: 2px;
+            margin: 5px;
+        }
+        .toggle-cell {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .toggle-cell.affects {
+            background: #ff6b6b;
+            color: white;
+        }
+        .toggle-cell.no-affect {
+            background: #333;
+            color: #666;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .solution-grid .cell.press {
+            background: linear-gradient(145deg, #ff6b6b, #ee5a5a);
+            color: white;
+        }
+        .solution-grid .cell.no-press {
+            background: #333;
+            color: #666;
+        }
+        #moveCount {
+            font-size: 24px;
+            color: #ffd700;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lights Out Puzzle</h1>
+        <p style="text-align: center; color: #aaa;">Goal: Turn ALL lights ON using linear algebra over GF(2)</p>
+
+        <!-- Game Section -->
+        <div class="game-section">
+            <div class="game-panel">
+                <h3>Game Grid</h3>
+                <p>Click any light to toggle it + neighbors</p>
+                <div id="gameGrid" class="grid"></div>
+                <div class="status-bar">
+                    <div>Moves: <span id="moveCount">0</span></div>
+                    <div>Lights On: <span id="lightsOn">0</span>/25</div>
+                </div>
+                <div class="controls">
+                    <button onclick="randomize()">Randomize</button>
+                    <button onclick="allOff()">All Off</button>
+                    <button onclick="allOn()">All On</button>
+                </div>
+            </div>
+
+            <div class="game-panel">
+                <h3>Solution (Which to Press)</h3>
+                <p>Red = press this button</p>
+                <div id="solutionGrid" class="grid solution-grid"></div>
+                <div class="controls">
+                    <button class="primary" onclick="solve()">Solve with Linear Algebra</button>
+                    <button onclick="showNextMove()">Hint: Show Next Move</button>
+                    <button onclick="autoSolve()">Auto-Solve (Animated)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Explanation Section -->
+        <div class="explanation">
+            <h2>How It Works: Linear Algebra over GF(2)</h2>
+
+            <div class="step-indicator">Step 1: Understanding the Toggle Pattern</div>
+            <p>When you press a button at position (r, c), it toggles itself and its orthogonal neighbors:</p>
+
+            <div class="flex-row" id="togglePatterns">
+                <!-- Will be populated by JS -->
+            </div>
+
+            <div class="step-indicator">Step 2: Binary Field GF(2)</div>
+            <p>We work in <strong>GF(2)</strong> (Galois Field with 2 elements: 0 and 1):</p>
+            <div class="math-box">
+                <strong>Addition (XOR):</strong> 0+0=0, 0+1=1, 1+0=1, 1+1=0<br>
+                <strong>Multiplication (AND):</strong> 0×0=0, 0×1=0, 1×0=0, 1×1=1<br><br>
+                <strong>Key insight:</strong> Pressing a button twice = no change (x + x = 0 in GF(2))
+            </div>
+
+            <div class="step-indicator">Step 3: Matrix Formulation</div>
+            <p>We represent the puzzle as a system of linear equations:</p>
+            <div class="math-box">
+                <strong>A · x = b (mod 2)</strong><br><br>
+                • <strong>A</strong> = 25×25 toggle matrix (column i shows which lights toggle when pressing button i)<br>
+                • <strong>x</strong> = solution vector (which buttons to press: 0 or 1)<br>
+                • <strong>b</strong> = target change vector (current state XOR all-ones)
+            </div>
+
+            <div class="step-indicator">Step 4: The Toggle Matrix A</div>
+            <p>Each column of A represents the toggle pattern for one button. Here's a visualization:</p>
+            <div id="toggleMatrixViz" style="overflow-x: auto;">
+                <!-- Will show matrix -->
+            </div>
+
+            <div class="step-indicator">Step 5: Gaussian Elimination in GF(2)</div>
+            <p>We solve <strong>A · x = b</strong> using Gaussian elimination, but all arithmetic is mod 2:</p>
+            <div class="math-box">
+                1. Create augmented matrix [A | b]<br>
+                2. For each column (pivot):<br>
+                   &nbsp;&nbsp;a. Find a row with 1 in pivot position<br>
+                   &nbsp;&nbsp;b. Swap to bring it to pivot row<br>
+                   &nbsp;&nbsp;c. XOR this row with all other rows that have 1 in pivot column<br>
+                3. Back-substitute to find x
+            </div>
+
+            <div class="step-indicator">Step 6: Solution Log</div>
+            <div id="solutionLog" class="log">Click "Solve with Linear Algebra" to see the step-by-step solution...</div>
+        </div>
+
+        <!-- Detailed Matrix View -->
+        <div class="explanation">
+            <h2>Full Toggle Matrix (25×25)</h2>
+            <p>Each row represents a light. Each column represents a button press. A "1" means that light toggles.</p>
+            <div id="fullMatrix" style="overflow-x: auto; font-size: 10px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const SIZE = 5;
+        const N = SIZE * SIZE;
+
+        // Game state
+        let gameState = new Array(N).fill(0);
+        let solution = new Array(N).fill(0);
+        let moveCount = 0;
+
+        // Convert (row, col) to index
+        function idx(r, c) {
+            return r * SIZE + c;
+        }
+
+        // Convert index to (row, col)
+        function pos(i) {
+            return [Math.floor(i / SIZE), i % SIZE];
+        }
+
+        // Get toggle pattern for button at index i
+        function getTogglePattern(i) {
+            const pattern = new Array(N).fill(0);
+            const [r, c] = pos(i);
+
+            pattern[i] = 1; // Self
+            if (r > 0) pattern[idx(r-1, c)] = 1; // Up
+            if (r < SIZE-1) pattern[idx(r+1, c)] = 1; // Down
+            if (c > 0) pattern[idx(r, c-1)] = 1; // Left
+            if (c < SIZE-1) pattern[idx(r, c+1)] = 1; // Right
+
+            return pattern;
+        }
+
+        // Build the toggle matrix A
+        function buildToggleMatrix() {
+            const A = [];
+            for (let i = 0; i < N; i++) {
+                A.push(new Array(N).fill(0));
+            }
+
+            for (let col = 0; col < N; col++) {
+                const pattern = getTogglePattern(col);
+                for (let row = 0; row < N; row++) {
+                    A[row][col] = pattern[row];
+                }
+            }
+
+            return A;
+        }
+
+        // Gaussian elimination in GF(2)
+        function solveGF2(A, b, logCallback) {
+            const n = A.length;
+
+            // Create augmented matrix
+            const aug = A.map((row, i) => [...row, b[i]]);
+
+            logCallback("=== Starting Gaussian Elimination in GF(2) ===\n");
+            logCallback(`Matrix size: ${n}×${n}, solving for ${n} unknowns\n\n`);
+
+            // Forward elimination
+            let pivotRow = 0;
+            const pivotCols = [];
+
+            for (let col = 0; col < n && pivotRow < n; col++) {
+                // Find pivot
+                let found = -1;
+                for (let row = pivotRow; row < n; row++) {
+                    if (aug[row][col] === 1) {
+                        found = row;
+                        break;
+                    }
+                }
+
+                if (found === -1) {
+                    logCallback(`Column ${col}: No pivot found, skipping\n`);
+                    continue;
+                }
+
+                // Swap rows
+                if (found !== pivotRow) {
+                    [aug[pivotRow], aug[found]] = [aug[found], aug[pivotRow]];
+                    logCallback(`Column ${col}: Swapped row ${found} with row ${pivotRow}\n`);
+                }
+
+                pivotCols.push({ row: pivotRow, col: col });
+
+                // Eliminate
+                let elimCount = 0;
+                for (let row = 0; row < n; row++) {
+                    if (row !== pivotRow && aug[row][col] === 1) {
+                        for (let k = 0; k <= n; k++) {
+                            aug[row][k] ^= aug[pivotRow][k];
+                        }
+                        elimCount++;
+                    }
+                }
+
+                logCallback(`Column ${col}: Pivot at row ${pivotRow}, eliminated ${elimCount} rows\n`);
+                pivotRow++;
+            }
+
+            logCallback(`\n=== Forward elimination complete ===\n`);
+            logCallback(`Found ${pivotCols.length} pivot columns\n\n`);
+
+            // Extract solution
+            const x = new Array(n).fill(0);
+
+            // Check for inconsistency
+            for (let row = 0; row < n; row++) {
+                let allZero = true;
+                for (let col = 0; col < n; col++) {
+                    if (aug[row][col] === 1) {
+                        allZero = false;
+                        break;
+                    }
+                }
+                if (allZero && aug[row][n] === 1) {
+                    logCallback("ERROR: No solution exists (inconsistent system)\n");
+                    return null;
+                }
+            }
+
+            // Back substitution
+            for (let i = pivotCols.length - 1; i >= 0; i--) {
+                const { row, col } = pivotCols[i];
+                x[col] = aug[row][n];
+                for (let k = col + 1; k < n; k++) {
+                    x[col] ^= (aug[row][k] & x[k]);
+                }
+            }
+
+            logCallback("=== Solution found! ===\n");
+            const presses = x.map((v, i) => v === 1 ? i : -1).filter(i => i >= 0);
+            logCallback(`Buttons to press: ${presses.length}\n`);
+            logCallback(`Positions: ${presses.map(i => `(${Math.floor(i/SIZE)},${i%SIZE})`).join(', ')}\n`);
+
+            return x;
+        }
+
+        // Apply toggle to game state
+        function toggleAt(i, updateUI = true) {
+            const pattern = getTogglePattern(i);
+            for (let j = 0; j < N; j++) {
+                if (pattern[j]) {
+                    gameState[j] ^= 1;
+                }
+            }
+            if (updateUI) {
+                moveCount++;
+                updateGameGrid();
+            }
+        }
+
+        // Update game grid UI
+        function updateGameGrid() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+
+            let onCount = 0;
+            for (let i = 0; i < N; i++) {
+                const cell = document.createElement('button');
+                cell.className = `cell ${gameState[i] ? 'on' : 'off'}`;
+                cell.textContent = gameState[i] ? 'ON' : 'OFF';
+                cell.onclick = () => toggleAt(i);
+                grid.appendChild(cell);
+                if (gameState[i]) onCount++;
+            }
+
+            document.getElementById('moveCount').textContent = moveCount;
+            document.getElementById('lightsOn').textContent = onCount;
+
+            if (onCount === N) {
+                document.getElementById('lightsOn').style.color = '#4ecdc4';
+            } else {
+                document.getElementById('lightsOn').style.color = '#ffd700';
+            }
+        }
+
+        // Update solution grid UI
+        function updateSolutionGrid() {
+            const grid = document.getElementById('solutionGrid');
+            grid.innerHTML = '';
+
+            for (let i = 0; i < N; i++) {
+                const cell = document.createElement('div');
+                cell.className = `cell ${solution[i] ? 'press' : 'no-press'}`;
+                cell.textContent = solution[i] ? 'PRESS' : '-';
+                grid.appendChild(cell);
+            }
+        }
+
+        // Solve the puzzle
+        function solve() {
+            const log = document.getElementById('solutionLog');
+            log.innerHTML = '';
+
+            const logCallback = (msg) => {
+                log.innerHTML += msg;
+                log.scrollTop = log.scrollHeight;
+            };
+
+            // Target: all lights on (1)
+            const target = new Array(N).fill(1);
+
+            // b = current state XOR target = what needs to change
+            const b = gameState.map((s, i) => s ^ target[i]);
+
+            logCallback("Current state: " + gameState.join('') + "\n");
+            logCallback("Target state:  " + target.join('') + "\n");
+            logCallback("Difference b:  " + b.join('') + "\n\n");
+
+            const A = buildToggleMatrix();
+            solution = solveGF2(A, b, logCallback);
+
+            if (solution) {
+                updateSolutionGrid();
+
+                // Verify solution
+                logCallback("\n=== Verification ===\n");
+                const testState = [...gameState];
+                for (let i = 0; i < N; i++) {
+                    if (solution[i]) {
+                        const pattern = getTogglePattern(i);
+                        for (let j = 0; j < N; j++) {
+                            if (pattern[j]) testState[j] ^= 1;
+                        }
+                    }
+                }
+                const allOn = testState.every(s => s === 1);
+                logCallback(allOn ?
+                    "✓ Solution verified: All lights will be ON!\n" :
+                    "✗ Verification failed!\n");
+            } else {
+                solution = new Array(N).fill(0);
+                updateSolutionGrid();
+            }
+        }
+
+        // Show next move hint
+        function showNextMove() {
+            if (!solution || solution.every(s => s === 0)) {
+                solve();
+            }
+
+            // Find first button in solution that should be pressed
+            // and corresponding light is not yet "done"
+            for (let i = 0; i < N; i++) {
+                if (solution[i] === 1) {
+                    const cells = document.getElementById('gameGrid').children;
+                    cells[i].classList.add('solution-hint');
+                    setTimeout(() => cells[i].classList.remove('solution-hint'), 2000);
+                    return;
+                }
+            }
+        }
+
+        // Auto-solve with animation
+        async function autoSolve() {
+            if (!solution || solution.every(s => s === 0)) {
+                solve();
+            }
+
+            for (let i = 0; i < N; i++) {
+                if (solution[i] === 1) {
+                    toggleAt(i);
+                    solution[i] = 0;
+                    updateSolutionGrid();
+                    await new Promise(r => setTimeout(r, 300));
+                }
+            }
+        }
+
+        // Game controls
+        function randomize() {
+            gameState = new Array(N).fill(0);
+            moveCount = 0;
+            // Make random moves to ensure solvability
+            const numMoves = Math.floor(Math.random() * 15) + 5;
+            for (let i = 0; i < numMoves; i++) {
+                const pos = Math.floor(Math.random() * N);
+                toggleAt(pos, false);
+            }
+            solution = new Array(N).fill(0);
+            updateGameGrid();
+            updateSolutionGrid();
+        }
+
+        function allOff() {
+            gameState = new Array(N).fill(0);
+            moveCount = 0;
+            solution = new Array(N).fill(0);
+            updateGameGrid();
+            updateSolutionGrid();
+        }
+
+        function allOn() {
+            gameState = new Array(N).fill(1);
+            moveCount = 0;
+            solution = new Array(N).fill(0);
+            updateGameGrid();
+            updateSolutionGrid();
+        }
+
+        // Show toggle patterns
+        function showTogglePatterns() {
+            const container = document.getElementById('togglePatterns');
+            container.innerHTML = '';
+
+            // Show a few example patterns
+            const examples = [0, 2, 12, 24];
+
+            for (const i of examples) {
+                const pattern = getTogglePattern(i);
+                const [r, c] = pos(i);
+
+                const div = document.createElement('div');
+                div.innerHTML = `<strong>Button (${r},${c}):</strong>`;
+
+                const grid = document.createElement('div');
+                grid.className = 'toggle-pattern';
+
+                for (let j = 0; j < N; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = `toggle-cell ${pattern[j] ? 'affects' : 'no-affect'}`;
+                    cell.textContent = pattern[j] ? '1' : '0';
+                    grid.appendChild(cell);
+                }
+
+                div.appendChild(grid);
+                container.appendChild(div);
+            }
+        }
+
+        // Show full toggle matrix
+        function showFullMatrix() {
+            const container = document.getElementById('fullMatrix');
+            const A = buildToggleMatrix();
+
+            let html = '<div style="display: inline-block; font-family: monospace;">';
+            html += '<div style="margin-bottom: 5px;"><strong>Rows = lights, Columns = button presses</strong></div>';
+            html += '<table style="border-collapse: collapse;">';
+
+            // Header
+            html += '<tr><td></td>';
+            for (let c = 0; c < N; c++) {
+                html += `<td style="width: 16px; text-align: center; color: #ff6b6b; font-size: 8px;">${c}</td>`;
+            }
+            html += '</tr>';
+
+            for (let r = 0; r < N; r++) {
+                html += `<tr><td style="color: #4ecdc4; font-size: 8px; padding-right: 3px;">${r}</td>`;
+                for (let c = 0; c < N; c++) {
+                    const val = A[r][c];
+                    const bg = val ? 'rgba(255,215,0,0.4)' : 'rgba(0,0,0,0.2)';
+                    html += `<td style="width: 16px; height: 16px; text-align: center; background: ${bg}; border: 1px solid #333;">${val}</td>`;
+                }
+                html += '</tr>';
+            }
+
+            html += '</table></div>';
+            container.innerHTML = html;
+        }
+
+        // Initialize
+        function init() {
+            randomize();
+            showTogglePatterns();
+            showFullMatrix();
+        }
+
+        init();
+    </script>
+</body>
+</html>
