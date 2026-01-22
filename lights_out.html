@@ -48,7 +48,6 @@
         }
         .grid {
             display: inline-grid;
-            grid-template-columns: repeat(5, 50px);
             gap: 5px;
             padding: 10px;
             background: #111;
@@ -103,6 +102,18 @@
         }
         button.primary {
             background: linear-gradient(145deg, #667eea, #764ba2);
+        }
+        select {
+            background: linear-gradient(145deg, #2a2a4a, #1a1a3e);
+            border: 1px solid #4ecdc4;
+            color: #eee;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        select:hover {
+            border-color: #ffd700;
         }
         .explanation {
             background: rgba(255,255,255,0.05);
@@ -174,7 +185,6 @@
         }
         .toggle-pattern {
             display: inline-grid;
-            grid-template-columns: repeat(5, 20px);
             gap: 2px;
             margin: 5px;
         }
@@ -233,10 +243,18 @@
             <div class="game-panel">
                 <h3>Game Grid</h3>
                 <p>Click any light to toggle it + neighbors</p>
+                <div class="controls" style="margin-bottom: 10px;">
+                    <label for="sizeSelect">Grid Size: </label>
+                    <select id="sizeSelect" onchange="changeSize(this.value)">
+                        <option value="2">2x2</option>
+                        <option value="3">3x3</option>
+                        <option value="5" selected>5x5</option>
+                    </select>
+                </div>
                 <div id="gameGrid" class="grid"></div>
                 <div class="status-bar">
                     <div>Moves: <span id="moveCount">0</span></div>
-                    <div>Lights On: <span id="lightsOn">0</span>/25</div>
+                    <div>Lights On: <span id="lightsOn">0</span>/<span id="totalLights">25</span></div>
                 </div>
                 <div class="controls">
                     <button onclick="randomize()">Randomize</button>
@@ -280,7 +298,7 @@
             <p>We represent the puzzle as a system of linear equations:</p>
             <div class="math-box">
                 <strong>A · x = b (mod 2)</strong><br><br>
-                • <strong>A</strong> = 25×25 toggle matrix (column i shows which lights toggle when pressing button i)<br>
+                • <strong>A</strong> = N×N toggle matrix (column i shows which lights toggle when pressing button i)<br>
                 • <strong>x</strong> = solution vector (which buttons to press: 0 or 1)<br>
                 • <strong>b</strong> = target change vector (current state XOR all-ones)
             </div>
@@ -358,15 +376,15 @@
 
         <!-- Detailed Matrix View -->
         <div class="explanation">
-            <h2>Full Toggle Matrix (25×25)</h2>
+            <h2>Full Toggle Matrix (<span id="matrixSize">25×25</span>)</h2>
             <p>Each row represents a light. Each column represents a button press. A "1" means that light toggles.</p>
             <div id="fullMatrix" style="overflow-x: auto; font-size: 10px;"></div>
         </div>
     </div>
 
     <script>
-        const SIZE = 5;
-        const N = SIZE * SIZE;
+        let SIZE = 5;
+        let N = SIZE * SIZE;
 
         // Game state
         let gameState = new Array(N).fill(0);
@@ -522,6 +540,7 @@
         function updateGameGrid() {
             const grid = document.getElementById('gameGrid');
             grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${SIZE}, 50px)`;
 
             let onCount = 0;
             for (let i = 0; i < N; i++) {
@@ -535,6 +554,7 @@
 
             document.getElementById('moveCount').textContent = moveCount;
             document.getElementById('lightsOn').textContent = onCount;
+            document.getElementById('totalLights').textContent = N;
 
             if (onCount === N) {
                 document.getElementById('lightsOn').style.color = '#4ecdc4';
@@ -547,6 +567,7 @@
         function updateSolutionGrid() {
             const grid = document.getElementById('solutionGrid');
             grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${SIZE}, 50px)`;
 
             for (let i = 0; i < N; i++) {
                 const cell = document.createElement('div');
@@ -554,6 +575,18 @@
                 cell.textContent = solution[i] ? 'PRESS' : '-';
                 grid.appendChild(cell);
             }
+        }
+
+        // Change grid size
+        function changeSize(newSize) {
+            SIZE = parseInt(newSize);
+            N = SIZE * SIZE;
+            gameState = new Array(N).fill(0);
+            solution = new Array(N).fill(0);
+            moveCount = 0;
+            randomize();
+            showTogglePatterns();
+            showFullMatrix();
         }
 
         // Solve the puzzle
@@ -673,10 +706,18 @@
             const container = document.getElementById('togglePatterns');
             container.innerHTML = '';
 
-            // Show a few example patterns
-            const examples = [0, 2, 12, 24];
+            // Show example patterns based on grid size
+            let examples;
+            if (SIZE === 2) {
+                examples = [0, 1, 2, 3];
+            } else if (SIZE === 3) {
+                examples = [0, 1, 4, 8];
+            } else {
+                examples = [0, 2, 12, 24];
+            }
 
             for (const i of examples) {
+                if (i >= N) continue;
                 const pattern = getTogglePattern(i);
                 const [r, c] = pos(i);
 
@@ -685,6 +726,7 @@
 
                 const grid = document.createElement('div');
                 grid.className = 'toggle-pattern';
+                grid.style.gridTemplateColumns = `repeat(${SIZE}, 20px)`;
 
                 for (let j = 0; j < N; j++) {
                     const cell = document.createElement('div');
@@ -702,6 +744,9 @@
         function showFullMatrix() {
             const container = document.getElementById('fullMatrix');
             const A = buildToggleMatrix();
+
+            // Update matrix size header
+            document.getElementById('matrixSize').textContent = `${N}×${N}`;
 
             let html = '<div style="display: inline-block; font-family: monospace;">';
             html += '<div style="margin-bottom: 5px;"><strong>Rows = lights, Columns = button presses</strong></div>';
