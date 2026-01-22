@@ -291,6 +291,56 @@
                 <!-- Will show matrix -->
             </div>
 
+            <div class="lights-out-math" style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+    
+    <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db;">The Linear Algebra of Lights Out</h2>
+
+    <section style="margin-bottom: 30px;">
+        <h3>1. The Adjacency Matrix (A)</h3>
+        <p>This matrix is the "Rulebook." Each column represents a button on the board. A <strong>1</strong> means that light is affected when the button is pressed; a <strong>0</strong> means it stays the same.</p>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; font-family: monospace; text-align: center;">
+            [ Rule for Button 1 | Rule for Button 2 | Rule for Button 3... ]
+        </div>
+    </section>
+
+    <section style="margin-bottom: 30px;">
+        <h3>2. The Augmented Matrix [A | b]</h3>
+        <p>To solve the puzzle, we combine the Rulebook (A) with our Target Board (b). The target board is a vector showing which lights are currently <strong>ON</strong>.</p>
+        
+        <table style="margin: 20px auto; border-collapse: collapse; font-family: monospace; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ccc;">1 1 1 0</td>
+                <td style="padding: 10px; border-left: 3px solid #3498db; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; border-right: 1px solid #ccc; background: #eefbff;"><strong>1</strong></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ccc;">1 1 0 1</td>
+                <td style="padding: 10px; border-left: 3px solid #3498db; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; border-right: 1px solid #ccc; background: #eefbff;"><strong>0</strong></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ccc;">1 0 1 1</td>
+                <td style="padding: 10px; border-left: 3px solid #3498db; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; border-right: 1px solid #ccc; background: #eefbff;"><strong>0</strong></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ccc;">0 1 1 1</td>
+                <td style="padding: 10px; border-left: 3px solid #3498db; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; border-right: 1px solid #ccc; background: #eefbff;"><strong>0</strong></td>
+            </tr>
+        </table>
+        <p style="font-size: 0.9em; text-align: center; color: #666;"><em>(The left side is the grid rules; the right side is your current board.)</em></p>
+    </section>
+
+    <section>
+        <h3>3. Row Operations (Binary/Mod 2)</h3>
+        <p>We use Row Operations to simplify the matrix. In "Lights Out" math, adding two rows follows <strong>Binary Logic</strong>:</p>
+        <ul style="list-style-type: none; padding-left: 0;">
+            <li style="background: #e8f4fd; margin-bottom: 5px; padding: 8px; border-radius: 4px;"><strong>1 + 1 = 0</strong> (Two presses toggle a light back to off)</li>
+            <li style="background: #e8f4fd; margin-bottom: 5px; padding: 8px; border-radius: 4px;"><strong>1 + 0 = 1</strong> (One press turns a light on/off)</li>
+            <li style="background: #e8f4fd; margin-bottom: 5px; padding: 8px; border-radius: 4px;"><strong>0 + 0 = 0</strong> (No presses equals no change)</li>
+        </ul>
+        <p>By adding rows together using these rules, we cancel out the numbers until the right-hand column reveals our <strong>Winning Strategy</strong>.</p>
+    </section>
+
+</div>
+
             <div class="step-indicator">Step 5: Gaussian Elimination in GF(2)</div>
             <p>We solve <strong>A · x = b</strong> using Gaussian elimination, but all arithmetic is mod 2:</p>
             <div class="math-box">
